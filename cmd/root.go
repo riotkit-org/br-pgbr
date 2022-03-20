@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"github.com/riotkit-org/br-pg-simple-backup/cmd/db"
 	"github.com/riotkit-org/br-pg-simple-backup/cmd/wrapper"
 	"github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
@@ -22,5 +23,7 @@ func Main(libDir string) *cobra.Command {
 	cmd.AddCommand(wrapper.NewCmdPostgresWrapper(libDir, "pg_dump", "pg_dump"))
 	cmd.AddCommand(wrapper.NewCmdPostgresWrapper(libDir, "pg_dumpall", "pg_dumpall"))
 	cmd.AddCommand(wrapper.NewCmdPostgresWrapper(libDir, "pg_restore", "pg_restore"))
+	cmd.AddCommand(db.NewDbCommand(libDir))
+
 	return cmd
 }

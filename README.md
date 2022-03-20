@@ -7,3 +7,5 @@ PostgreSQL simple backup &amp; restore helper tool created for usage with Backup
 - Minimum system requirements, no extra binaries or libraries and **even no PostgreSQL client is required, just this one binary**
 - Opinionated backup & restore commands basing on PostgreSQL built-in commands
 
+**Requirements:**
+- [patchelf](https://github.com/NixOS/patchelf)
