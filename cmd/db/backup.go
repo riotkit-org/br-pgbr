@@ -8,8 +8,8 @@ import (
 	"github.com/spf13/cobra"
 )
 
-// NewRestoreCommand creates the new command
-func NewRestoreCommand(libDir string) *cobra.Command {
+// NewBackupCommand creates the new command
+func NewBackupCommand(libDir string) *cobra.Command {
 	app := &BackupCommand{}
 	var basicOpts base.BasicOptions
 

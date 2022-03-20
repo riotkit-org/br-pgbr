@@ -18,6 +18,7 @@ func NewDbCommand(libDir string) *cobra.Command {
 		},
 	}
 
+	command.AddCommand(NewBackupCommand(libDir))
 	command.AddCommand(NewRestoreCommand(libDir))
 
 	return command
