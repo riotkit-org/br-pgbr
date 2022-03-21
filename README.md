@@ -1,4 +1,4 @@
-# pg-simple-backup
+# pgbr
 
 PostgreSQL simple backup &amp; restore helper tool created for usage with Backup Repository, but can be used also standalone.
 
@@ -9,6 +9,7 @@ PostgreSQL simple backup &amp; restore helper tool created for usage with Backup
 
 **Requirements:**
 - [patchelf](https://github.com/NixOS/patchelf)
+- Linux
 
 
 Backup
