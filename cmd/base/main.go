@@ -6,7 +6,7 @@ import (
 )
 
 func PopulateFlags(command *cobra.Command, o *BasicOptions) {
-	command.Flags().StringVarP(&o.LogLevel, "log-level", "", "", "Logging level: error, warning, info, debug (default: info)")
+	command.Flags().StringVarP(&o.LogLevel, "log-level", "", "info", "Logging level: error, warning, info, debug (default: info)")
 }
 
 func PreCommandRun(command *cobra.Command, o *BasicOptions) {

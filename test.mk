@@ -25,10 +25,16 @@ test_import_data: ## Imports bigger amount of simple structured data + real appl
 
 test_dump:
 	mkdir -p .build/.test-backups
-	@./.build/pgbr db backup -P riotkit -U riotkit -d pbr > .build/.test-backups/dump.gz
+	@./.build/pgbr db backup -P riotkit -U riotkit --db-name pbr > .build/.test-backups/dump.gz
+
+test_dump_all:
+	mkdir -p .build/.test-backups
+	@./.build/pgbr db backup -P riotkit -U riotkit --connection-database=postgres > .build/.test-backups/dump.gz
 
 test_restore:
-	@cat .build/.test-backups/dump.gz | ./.build/pgbr db restore -P riotkit -U riotkit
+	@cat .build/.test-backups/dump.gz | ./.build/pgbr db restore -P riotkit -U riotkit --db-name pbr
 
+test_restore_all:
+	@cat .build/.test-backups/dump.gz | ./.build/pgbr db restore -P riotkit -U riotkit
 
 # todo: pg_restore: error: could not execute query: ERROR:  database "pbr" is being accessed by other users

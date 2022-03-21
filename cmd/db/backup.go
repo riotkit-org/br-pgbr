@@ -33,6 +33,7 @@ func NewBackupCommand(libDir string) *cobra.Command {
 	command.Flags().StringVarP(&app.Password, "password", "P", "", "Password")
 	command.Flags().StringVarP(&app.Database, "db-name", "d", "", "Database name. Leave empty to dump all")
 	command.Flags().IntVarP(&app.CompressionLevel, "compression-level", "Z", 7, "Compression level 0-9")
+	command.Flags().StringVarP(&app.InitialDbName, "connection-database", "D", "postgres", "Any, even empty database name to connect to initially")
 	base.PopulateFlags(command, &basicOpts)
 
 	return command
@@ -44,6 +45,7 @@ type BackupCommand struct {
 	Username         string
 	Password         string
 	Database         string
+	InitialDbName    string
 	CompressionLevel int
 	ExtraArgs        []string
 }
@@ -68,7 +70,7 @@ func (bc *BackupCommand) Run(libDir string) error {
 		dumpArgs = append(dumpArgs, "--create", "--blobs", bc.Database)
 	} else {
 		// pg_dumpall
-		dumpArgs = append(dumpArgs, "--superuser="+bc.Username)
+		dumpArgs = append(dumpArgs, "--superuser="+bc.Username, "--dbname="+bc.InitialDbName)
 	}
 
 	// passing extra arguments to the pg_dump/pg_dumpall
