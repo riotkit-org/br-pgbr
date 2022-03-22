@@ -52,8 +52,12 @@ func PatchBinaries(targetDir string) error {
 		return errors.Wrapf(absErr, "Cannot find absolute path for '%s'", targetDir)
 	}
 
-	interpreterPath := absDir + "/ld-linux-x86-64.so.2"
+	interpreterPath := findInterpreterPath(absDir)
 	logrus.Debugf("Interpreter path: '%s'", interpreterPath)
+
+	if interpreterPath == "" {
+		return errors.New("cannot find ld-linux or ld-musl")
+	}
 
 	binDir := absDir + "/bin"
 	_ = os.MkdirAll(binDir, 0755)
@@ -77,4 +81,26 @@ func PatchBinaries(targetDir string) error {
 	}
 
 	return nil
+}
+
+func findInterpreterPath(libPath string) string {
+	possibleMatches := [][]string{
+		// musl (Alpine Linux)
+		glob(libPath + "/ld-musl-*"),
+		// libc (all others)
+		glob(libPath + "/ld-linux*"),
+	}
+
+	for _, matches := range possibleMatches {
+		if len(matches) > 0 {
+			return matches[0]
+		}
+	}
+
+	return ""
+}
+
+func glob(pattern string) []string {
+	matches, _ := filepath.Glob(pattern)
+	return matches
 }

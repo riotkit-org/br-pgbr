@@ -1,0 +1,40 @@
+name: Test
+on:
+    pull_request:
+    push:
+
+env:
+    REGISTRY: ghcr.io
+    IMAGE_NAME: "riotkit-org/backup-repository"
+    GO_VERSION: "1.17"
+    POSTGRES_VERSION: "14.0"
+
+permissions:
+    packages: write
+
+jobs:
+    test-and-release-snapshot:
+        runs-on: ubuntu-latest
+        steps:
+            - name: Checkout
+              uses: actions/checkout@v3
+              with:
+                  fetch-depth: 0
+
+            - name: Set up Go
+              uses: actions/setup-go@v2
+              with:
+                  go-version: 1.17
+
+            - name: Setup dependencies
+              run: "go install -a -v github.com/go-bindata/go-bindata/...@latest"
+
+            - name: Build
+              run: "make dockerfile ci_build build GO_VERSION=${{ env.GO_VERSION }} POSTGRES_VERSION=${{ env.POSTGRES_VERSION }}"
+
+            - name: Build docker image
+              uses: docker/build-push-action@v2
+              with:
+                  context: .
+                  dockerfile: .build/Dockerfile
+                  push: false
