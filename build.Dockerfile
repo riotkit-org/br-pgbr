@@ -24,7 +24,6 @@ ADD . /workspace
 RUN go install -a -v github.com/go-bindata/go-bindata/...@latest
 
 COPY --from=postgres /workspace/.build /workspace/.build
-COPY --from=postgres /workspace/assets/main.go /workspace/assets/
 
 RUN cd /workspace \
     make generate_bin_data build
