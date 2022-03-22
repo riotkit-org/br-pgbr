@@ -8,6 +8,7 @@ ci_build:
 	docker cp builder:/workspace/.build ./
 
 dockerfile:
+	mkdir -p .build
 	cat build.Dockerfile > .build/Dockerfile
 	echo "" >> .build/Dockerfile
 	cat release.Dockerfile >> .build/Dockerfile
