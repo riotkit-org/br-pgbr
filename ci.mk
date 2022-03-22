@@ -6,7 +6,7 @@ ci_build:
 	@docker rm -f builder 2>/dev/null
 	docker create --name builder build
 	docker cp builder:/workspace/.build ./
-	docker cp builder:/workspace/assets/main.go ./assets/
+	docker cp builder:/workspace/assets ./
 
 dockerfile:
 	mkdir -p .build
