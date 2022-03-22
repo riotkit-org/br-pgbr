@@ -21,7 +21,9 @@ RUN cd /workspace && make copy_libs_and_executables
 FROM golang:${GO_VERSION}-alpine as builder
 
 ADD . /workspace
-RUN go install -a -v github.com/go-bindata/go-bindata/...@latest
+RUN go install -a -v github.com/go-bindata/go-bindata/...@latest \
+    && apk update \
+    && apk add make
 
 COPY --from=postgres /workspace/.build /workspace/.build
 
