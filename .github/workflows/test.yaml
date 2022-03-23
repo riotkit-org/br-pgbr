@@ -37,4 +37,4 @@ jobs:
               run: "make dockerfile ci_build build GO_VERSION=${{ env.GO_VERSION }} POSTGRES_VERSION=${{ env.POSTGRES_VERSION }}"
 
             - name: Build docker image and push snapshot image
-              run: "make ci_release_snapshot"
+              run: "make ci_release_snapshot POSTGRES_VERSION=${{ env.POSTGRES_VERSION }}"

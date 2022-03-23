@@ -38,7 +38,7 @@ jobs:
               run: "make dockerfile ci_build build GO_VERSION=${{ env.GO_VERSION }} POSTGRES_VERSION=${{ env.POSTGRES_VERSION }}"
 
             - name: Build docker image and push release image
-              run: "make ci_release_snapshot ci_release"
+              run: "make ci_release_snapshot ci_release POSTGRES_VERSION=${{ env.POSTGRES_VERSION }}"
 
 #            - name: Release binaries to GitHub releases
 #              uses: goreleaser/goreleaser-action@v2
