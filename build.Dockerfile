@@ -22,6 +22,7 @@ FROM golang:${GO_VERSION}-alpine as builder
 
 ADD . /workspace
 RUN go install -a -v github.com/go-bindata/go-bindata/...@latest \
+    && mkdir -p /root/go/bin && ln -s /go/bin/go-bindata /root/go/bin/go-bindata \
     && apk update \
     && apk add make
 
