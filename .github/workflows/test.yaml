@@ -38,4 +38,4 @@ jobs:
                   context: .
                   file: .build/Dockerfile
                   push: false
-                  build-args: "--build-arg GO_VERSION=${{ env.GO_VERSION }} --build-arg POSTGRES_VERSION=${{ env.POSTGRES_VERSION }}"
+                  build-args: "GO_VERSION=${{ env.GO_VERSION }} --build-arg POSTGRES_VERSION=${{ env.POSTGRES_VERSION }}"
