@@ -12,6 +12,20 @@ PostgreSQL simple backup &amp; restore helper tool created for usage with Backup
 - [patchelf](https://github.com/NixOS/patchelf)
 - Linux
 
+Conception
+----------
+
+**Single-binary**
+
+`pgbr` binary has compiled PostgreSQL tools, including dynamic libraries, everything is unpacked to temporary directory, then `patchelf` patches
+interpreter to match `ld-linux` or `ld-musl` at selected path and `pgbr` is invoking a process with extra `LD_LIBRARY_PATH` environment set.
+
+**Sensible defaults**
+
+Backup & Restore should be simple and fault-tolerant, that's why this tool is automating basic things like disconnecting clients, or connecting
+to database using an empty database schema during restore - we cannot restore database we connect to, also we cannot recreate from backup something that is in use.
+
+Both `pgbr db backup` and `pgbr db restore` should work out-of-the-box with sensible defaults.
 
 Backup
 ------
