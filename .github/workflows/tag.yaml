@@ -1,7 +1,8 @@
-name: Test
+name: Release
 on:
-    pull_request:
     push:
+        tags:
+            - '*'
 
 env:
     REGISTRY: ghcr.io
@@ -29,5 +30,7 @@ jobs:
             - name: Build
               run: "make dockerfile ci_build build GO_VERSION=${{ env.GO_VERSION }} POSTGRES_VERSION=${{ env.POSTGRES_VERSION }}"
 
-            - name: Build docker image and push snapshot image
-              run: "make ci_release_snapshot"
+            - name: Build docker image and push release image
+              run: "make ci_release_snapshot ci_release"
+
+            # todo: Go releaser
