@@ -14,7 +14,7 @@ permissions:
     packages: write
 
 jobs:
-    test-and-release-snapshot:
+    release:
         runs-on: ubuntu-latest
         steps:
             - name: Checkout
@@ -27,10 +27,22 @@ jobs:
               with:
                   go-version: 1.17
 
+            - name: Login to GitHub Container Registry
+              uses: docker/login-action@v1
+              with:
+                  registry: ghcr.io
+                  username: ${{ github.actor }}
+                  password: ${{ secrets.GITHUB_TOKEN }}
+
             - name: Build
               run: "make dockerfile ci_build build GO_VERSION=${{ env.GO_VERSION }} POSTGRES_VERSION=${{ env.POSTGRES_VERSION }}"
 
             - name: Build docker image and push release image
               run: "make ci_release_snapshot ci_release"
 
-            # todo: Go releaser
+#            - name: Release binaries to GitHub releases
+#              uses: goreleaser/goreleaser-action@v2
+#              with:
+#                  distribution: goreleaser
+#                  version: latest
+#                  args: release --rm-dist
