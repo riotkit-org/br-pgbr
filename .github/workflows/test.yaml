@@ -7,7 +7,6 @@ env:
     REGISTRY: ghcr.io
     IMAGE_NAME: "riotkit-org/backup-repository"
     GO_VERSION: "1.17"
-    POSTGRES_VERSION: "14.0"
 
 permissions:
     packages: write
@@ -15,6 +14,14 @@ permissions:
 jobs:
     test-and-release-snapshot:
         runs-on: ubuntu-latest
+        strategy:
+            max-parallel: 2
+            matrix:
+                include:
+                    - POSTGRES_VERSION: "14.0"
+                    - POSTGRES_VERSION: "13.0"
+                    - POSTGRES_VERSION: "12.0"
+                    - POSTGRES_VERSION: "11.0"
         steps:
             - name: Checkout
               uses: actions/checkout@v3
@@ -34,7 +41,7 @@ jobs:
                   password: ${{ secrets.GITHUB_TOKEN }}
 
             - name: Build
-              run: "make dockerfile ci_build build GO_VERSION=${{ env.GO_VERSION }} POSTGRES_VERSION=${{ env.POSTGRES_VERSION }}"
+              run: "make dockerfile ci_build build GO_VERSION=${{ env.GO_VERSION }} POSTGRES_VERSION=${{ matrix.POSTGRES_VERSION }}"
 
             - name: Build docker image and push snapshot image
-              run: "make ci_release_snapshot POSTGRES_VERSION=${{ env.POSTGRES_VERSION }}"
+              run: "make ci_release_snapshot POSTGRES_VERSION=${{ matrix.POSTGRES_VERSION }}"
