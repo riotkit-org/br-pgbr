@@ -8,6 +8,12 @@ ci_build:
 	docker cp builder:/workspace/.build ./
 	docker cp builder:/workspace/assets ./
 
+ci_check_embedded_binaries:
+	./.build/pgbr pg_dump -- --version
+	./.build/pgbr pg_dumpall -- --version
+	./.build/pgbr pg_restore -- --version
+	./.build/pgbr psql -- --version
+
 dockerfile:
 	mkdir -p .build
 	cat build.Dockerfile > .build/Dockerfile

@@ -25,10 +25,16 @@ def copy_dependencies_for_path(bin_path: str, target_dir: str):
 
     ldd = subprocess.check_output(['ldd', bin_path]).decode('utf-8').split("\n")
 
+    print(ldd)
+
     for line in ldd:
         parsed = re.findall('=>\s*([/A-Za-z\-_.0-9]+)\ ', line)
 
         if len(parsed) != 1:
+            continue
+
+        if parsed[0] == "ldd":
+            # ['\tldd (0x7f5a18c9c000)', '\tlibc.musl-x86_64.so.1 => ldd (0x7f5a18c9c000)', '']
             continue
 
         real_path = subprocess.check_output(['readlink', '-f', parsed[0]]).decode('utf-8').strip()
