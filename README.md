@@ -17,7 +17,7 @@ Conception
 
 **Single-binary**
 
-`pgbr` binary has compiled PostgreSQL tools, including dynamic libraries, everything is unpacked to temporary directory, then `patchelf` patches
+`pgbr` binary has compiled PostgreSQL tools, including libc (musl/glibc) and dynamic libraries, everything is unpacked into temporary directory, then `patchelf` patches
 interpreter to match `ld-linux` or `ld-musl` at selected path and `pgbr` is invoking a process with extra `LD_LIBRARY_PATH` environment set.
 
 **Sensible defaults**

@@ -64,13 +64,17 @@ func (bc *BackupCommand) Run(libDir string) error {
 		"PGPASSWORD=" + bc.Password,
 	}
 
+	var binName string
+
 	// difference between pg_dump and pg_dumpall
 	if !bc.allDatabases() {
 		// pg_dump
 		dumpArgs = append(dumpArgs, "--create", "--blobs", bc.Database)
+		binName = "pg_dump"
 	} else {
 		// pg_dumpall
 		dumpArgs = append(dumpArgs, "--superuser="+bc.Username, "--dbname="+bc.InitialDbName)
+		binName = "pg_dumpall"
 	}
 
 	// passing extra arguments to the pg_dump/pg_dumpall
@@ -78,7 +82,7 @@ func (bc *BackupCommand) Run(libDir string) error {
 		dumpArgs = append(dumpArgs, bc.ExtraArgs...)
 	}
 
-	return wrapper.RunWrappedPGCommand(libDir, "pg_dump", dumpArgs, envVars)
+	return wrapper.RunWrappedPGCommand(libDir, binName, dumpArgs, envVars)
 }
 
 func (bc *BackupCommand) allDatabases() bool {

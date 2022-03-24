@@ -16,10 +16,10 @@ def copy_dependencies(bin_name: str, target_dir: str):
         pass
 
     print(f' >> Copying dependencies for {bin_name}')
-    copy_dependencies_for_path(bin_path, target_dir)
+    copy_dependencies_for_path(bin_path, target_dir, depth=0)
 
 
-def copy_dependencies_for_path(bin_path: str, target_dir: str):
+def copy_dependencies_for_path(bin_path: str, target_dir: str, depth: int = 0):
     if bin_path in ALREADY_COPIED:
         return
 
@@ -28,21 +28,25 @@ def copy_dependencies_for_path(bin_path: str, target_dir: str):
     print(ldd)
 
     for line in ldd:
-        parsed = re.findall('=>\s*([/A-Za-z\-_.0-9]+)\ ', line)
-
-        if len(parsed) != 1:
+        if not line.strip() or "=>" not in line:
             continue
+
+        try:
+            parsed = re.findall('=>\s*([/A-Za-z\-_.0-9]+)\ ', line)
+            orig_name = re.findall('\s*([A-Za-z\-_.0-9]+)\s*=>', line)
+        finally:
+            print(">> Line caused error: ", line)
+
+        orig_name = orig_name[0]
 
         if parsed[0] == "ldd":
             # ['\tldd (0x7f5a18c9c000)', '\tlibc.musl-x86_64.so.1 => ldd (0x7f5a18c9c000)', '']
             continue
 
         real_path = subprocess.check_output(['readlink', '-f', parsed[0]]).decode('utf-8').strip()
-        print(f" >> Copying {real_path}")
-        subprocess.check_call(['cp', real_path, target_dir + "/" + os.path.basename(parsed[0])])
-        print(f" >> Recursively copying dependencies for {real_path}")
-        copy_dependencies_for_path(real_path, target_dir)
-        print(f" >> DONE copying dependencies")
+        print((" " * depth * 2) + f">> Copying {real_path} -> {orig_name}")
+        subprocess.check_call(['cp', real_path, target_dir + "/" + orig_name])
+        copy_dependencies_for_path(real_path, target_dir, depth + 1)
 
     ALREADY_COPIED.append(bin_path)
 
