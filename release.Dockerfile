@@ -1,3 +1,5 @@
+# Intentionally we do not use Alpine Linux there, to ensure binaries compatibility with at least Debian-like systems. We test on CI on Ubuntu and produce Debian images.
+
 # =====================
 #  Create target image
 # =====================
