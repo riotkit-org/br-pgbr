@@ -15,6 +15,10 @@ import (
 func UnpackAll(targetDir string) (bool, error) {
 	var hasAtLeastOneError bool
 
+	if err := os.RemoveAll(targetDir); err != nil {
+		return false, errors.Wrapf(err, "Cannot delete temporary directory at path: '%s'", targetDir)
+	}
+
 	if err := os.MkdirAll(targetDir, 0755); err != nil {
 		return false, errors.Wrapf(err, "Cannot create directory '%s'", targetDir)
 	}
