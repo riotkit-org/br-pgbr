@@ -68,7 +68,7 @@ pgbr psql -- --help
 # 
 #Usage:
 #  psql [OPTION]... [DBNAME [USERNAME]]
-#
+# 
 #General options:
 #  -c, --command=COMMAND    run only single command (SQL or internal) and exit
 #  -d, --dbname=DBNAME      database name to connect to (default: "damian")
