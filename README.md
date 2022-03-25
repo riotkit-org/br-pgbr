@@ -65,7 +65,7 @@ psql & pg_dump & pg_dumpall & pg_restore
 pgbr psql -- --help
 
 #psql is the PostgreSQL interactive terminal.
-#
+# 
 #Usage:
 #  psql [OPTION]... [DBNAME [USERNAME]]
 #
