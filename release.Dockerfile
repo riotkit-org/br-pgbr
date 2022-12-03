@@ -5,7 +5,7 @@
 # =====================
 FROM debian:bullseye-slim
 
-RUN apt-get update && apt-get install -y patchelf
+RUN apt-get update && apt-get install -y patchelf gpg
 
 COPY --from=builder /workspace/.build/pgbr /usr/bin/pgbr
 ENTRYPOINT ["/usr/bin/pgbr"]
