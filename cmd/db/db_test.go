@@ -44,6 +44,7 @@ func createContainer() (testcontainers.Container, error) {
 		ExposedPorts: []string{"5432/tcp"},
 		WaitingFor:   wait.ForLog("database system is ready to accept connections"),
 		AutoRemove:   true,
+		ReaperImage:  "quay.io/testcontainers/ryuk:0.2.3",
 		Env: map[string]string{
 			"POSTGRESQL_DATABASE": "riotkit",
 			"POSTGRESQL_USERNAME": "anarchism",
