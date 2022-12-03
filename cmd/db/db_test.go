@@ -40,11 +40,10 @@ func TestBackup(t *testing.T) {
 func createContainer() (testcontainers.Container, error) {
 	ctx := context.Background()
 	req := testcontainers.ContainerRequest{
-		Image:        "quay.io/bitnami/postgresql:" + getPostgresVersion(),
+		Image:        "bitnami/postgresql:" + getPostgresVersion(),
 		ExposedPorts: []string{"5432/tcp"},
 		WaitingFor:   wait.ForLog("database system is ready to accept connections"),
 		AutoRemove:   true,
-		ReaperImage:  "quay.io/testcontainers/ryuk:0.2.3",
 		Env: map[string]string{
 			"POSTGRESQL_DATABASE": "riotkit",
 			"POSTGRESQL_USERNAME": "anarchism",
