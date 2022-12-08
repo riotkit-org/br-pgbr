@@ -18,10 +18,11 @@ jobs:
             max-parallel: 2
             matrix:
                 include:
-                    - POSTGRES_VERSION: "14.0"
-                    - POSTGRES_VERSION: "13.0"
-                    - POSTGRES_VERSION: "12.0"
-                    - POSTGRES_VERSION: "11.0"
+                    - POSTGRES_VERSION: "15"
+                    - POSTGRES_VERSION: "14"
+                    - POSTGRES_VERSION: "13"
+                    - POSTGRES_VERSION: "12"
+                    - POSTGRES_VERSION: "11"
         steps:
             - name: Checkout
               uses: actions/checkout@v3
