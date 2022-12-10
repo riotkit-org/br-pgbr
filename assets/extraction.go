@@ -10,8 +10,8 @@ import (
 	"path/filepath"
 )
 
-// UnpackAll unpacks all stored libraries and binaries into single directory
-func UnpackAll(targetDir string) (bool, error) {
+// ExtractAllFromMemory unpacks all stored libraries and binaries into single directory
+func ExtractAllFromMemory(targetDir string) (bool, error) {
 	var hasAtLeastOneError bool
 
 	if err := os.RemoveAll(targetDir); err != nil {

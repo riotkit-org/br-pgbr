@@ -32,7 +32,8 @@ func (dw *Wrapper) Run(libDir string, binName string, execArgs []string) error {
 func RunWrappedPGCommand(libDir string, binName string, execArgs []string, envVars []string) error {
 	logrus.Debugf("Running '%s' %v", binName, execArgs)
 
-	c := exec.Command(libDir+"/bin/"+binName, execArgs...)
+	fullPath := libDir + "/bin/" + binName
+	c := exec.Command(fullPath, execArgs...)
 
 	env := os.Environ()
 	env = append(env, "LD_LIBRARY_PATH="+libDir)
@@ -43,7 +44,7 @@ func RunWrappedPGCommand(libDir string, binName string, execArgs []string, envVa
 	c.Stdin = os.Stdin
 	c.Env = env
 	if waitErr := c.Run(); waitErr != nil {
-		return errors.Wrap(waitErr, "error invoking "+binName)
+		return errors.Wrapf(waitErr, "error invoking '%s' (%s), LD_LIBRARY_PATH=%s", binName, fullPath, libDir)
 	}
 	return nil
 }

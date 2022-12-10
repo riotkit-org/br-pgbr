@@ -2,13 +2,13 @@ package db_test
 
 import (
 	"context"
+	"github.com/riotkit-org/br-pg-simple-backup/assets"
 	"github.com/riotkit-org/br-pg-simple-backup/cmd/db"
 	"github.com/stretchr/testify/assert"
 	"github.com/testcontainers/testcontainers-go"
 	"github.com/testcontainers/testcontainers-go/wait"
 	"log"
 	"os"
-	"path/filepath"
 	"strings"
 	"testing"
 )
@@ -23,7 +23,7 @@ func TestBackup(t *testing.T) {
 	endpoint, _ := container.Endpoint(context.Background(), "")
 	port := strings.Split(endpoint, ":")[1]
 
-	path, _ := filepath.Abs("../../.build/data")
+	path := assets.UnpackOrExit()
 	cmd := db.NewBackupCommand(path)
 	cmd.SetArgs([]string{
 		"--host=127.0.0.1",
@@ -34,7 +34,7 @@ func TestBackup(t *testing.T) {
 
 		// not using --db-name, in effect dumpall will be used
 	})
-	assert.Nil(t, cmd.Execute())
+	assert.Nil(t, cmd.Execute(), "Expected that the command will not return error")
 }
 
 func createContainer() (testcontainers.Container, error) {
