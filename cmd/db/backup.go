@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"github.com/riotkit-org/br-pg-simple-backup/cmd/base"
 	"github.com/riotkit-org/br-pg-simple-backup/cmd/wrapper"
-	"github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 )
 
@@ -14,16 +13,13 @@ func NewBackupCommand(libDir string) *cobra.Command {
 	var basicOpts base.BasicOptions
 
 	command := &cobra.Command{
-		Use:   "backup",
-		Short: "Backup using pg_dump and pg_dumpall",
-		Run: func(command *cobra.Command, args []string) {
+		Use:          "backup",
+		SilenceUsage: true,
+		Short:        "Backup using pg_dump and pg_dumpall",
+		RunE: func(command *cobra.Command, args []string) error {
 			app.ExtraArgs = command.Flags().Args()
 			base.PreCommandRun(command, &basicOpts)
-			err := app.Run(libDir)
-
-			if err != nil {
-				logrus.Errorf(err.Error())
-			}
+			return app.Run(libDir)
 		},
 	}
 

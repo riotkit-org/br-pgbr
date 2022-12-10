@@ -1,7 +1,6 @@
 package db
 
 import (
-	"github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 )
 
@@ -10,11 +9,8 @@ func NewDbCommand(libDir string) *cobra.Command {
 	command := &cobra.Command{
 		Use:   "db",
 		Short: "Operations on database level using dumps",
-		Run: func(command *cobra.Command, args []string) {
-			err := command.Help()
-			if err != nil {
-				logrus.Errorf(err.Error())
-			}
+		RunE: func(command *cobra.Command, args []string) error {
+			return command.Help()
 		},
 	}
 

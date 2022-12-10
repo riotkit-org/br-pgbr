@@ -13,14 +13,11 @@ func NewCmdPostgresWrapper(libDir string, binName string, cmdName string) *cobra
 	app := &Wrapper{}
 
 	command := &cobra.Command{
-		Use:   cmdName,
-		Short: binName + " wrapper, pass " + binName + " parameters after '--'",
-		Run: func(command *cobra.Command, args []string) {
-			err := app.Run(libDir, binName, command.Flags().Args())
-
-			if err != nil {
-				logrus.Errorf(err.Error())
-			}
+		Use:          cmdName,
+		SilenceUsage: true,
+		Short:        binName + " wrapper, pass " + binName + " parameters after '--'",
+		RunE: func(command *cobra.Command, args []string) error {
+			return app.Run(libDir, binName, command.Flags().Args())
 		},
 	}
 	return command

@@ -3,7 +3,6 @@ package cmd
 import (
 	"github.com/riotkit-org/br-pg-simple-backup/cmd/db"
 	"github.com/riotkit-org/br-pg-simple-backup/cmd/wrapper"
-	"github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 )
 
@@ -12,11 +11,8 @@ func Main(libDir string) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "pgbr",
 		Short: "PostgreSQL backup & restore wrapper for Backup Repository. Works also as a standalone, single-binary backup make & restore utility",
-		Run: func(cmd *cobra.Command, args []string) {
-			err := cmd.Help()
-			if err != nil {
-				logrus.Errorf(err.Error())
-			}
+		RunE: func(cmd *cobra.Command, args []string) error {
+			return cmd.Help()
 		},
 	}
 	cmd.AddCommand(wrapper.NewCmdPostgresWrapper(libDir, "psql", "psql"))

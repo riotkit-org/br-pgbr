@@ -20,16 +20,13 @@ func NewRestoreCommand(libDir string) *cobra.Command {
 	var basicOpts base.BasicOptions
 
 	command := &cobra.Command{
-		Use:   "restore",
-		Short: "Executes a backup restore procedure",
-		Run: func(command *cobra.Command, args []string) {
+		Use:          "restore",
+		SilenceUsage: true,
+		Short:        "Executes a backup restore procedure",
+		RunE: func(command *cobra.Command, args []string) error {
 			app.ExtraArgs = command.Flags().Args()
 			base.PreCommandRun(command, &basicOpts)
-			err := app.Run(libDir)
-
-			if err != nil {
-				logrus.Errorf(err.Error())
-			}
+			return app.Run(libDir)
 		},
 	}
 
