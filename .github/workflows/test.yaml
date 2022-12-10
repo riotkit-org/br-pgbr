@@ -5,15 +5,15 @@ on:
 
 env:
     REGISTRY: ghcr.io
-    IMAGE_NAME: "riotkit-org/backup-repository"
-    GO_VERSION: "1.17"
+    IMAGE_NAME: "riotkit-org/pgbr"
+    GO_VERSION: "1.19"
 
 permissions:
     packages: write
 
 jobs:
     test-and-release-snapshot:
-        runs-on: ubuntu-latest
+        runs-on: ubuntu-22.04
         strategy:
             max-parallel: 2
             matrix:

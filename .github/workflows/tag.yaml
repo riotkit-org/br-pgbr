@@ -6,8 +6,8 @@ on:
 
 env:
     REGISTRY: ghcr.io
-    IMAGE_NAME: "riotkit-org/backup-repository"
-    GO_VERSION: "1.17"
+    IMAGE_NAME: "riotkit-org/pgbr"
+    GO_VERSION: "1.19"
 
 jobs:
     release:
