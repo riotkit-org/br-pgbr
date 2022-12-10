@@ -1,5 +1,5 @@
-GO_VERSION=1.17
-POSTGRES_VERSION=14.0
+GO_VERSION=1.19
+POSTGRES_VERSION=15.0
 
 ci_check_embedded_binaries:
 	./.build/pgbr pg_dump -- --version

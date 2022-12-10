@@ -1,6 +1,6 @@
 module github.com/riotkit-org/br-pg-simple-backup
 
-go 1.17
+go 1.19
 
 require (
 	github.com/jackc/pgx/v4 v4.15.0
