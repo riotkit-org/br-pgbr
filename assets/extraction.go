@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
-	"io/ioutil"
 	"os"
 	"os/exec"
 	"path"
@@ -51,6 +50,8 @@ func UnpackAll(targetDir string) (bool, error) {
 }
 
 func PatchBinaries(targetDir string) error {
+	// todo: if patchelf is accessible, else return nil
+
 	absDir, absErr := filepath.Abs(targetDir)
 	if absErr != nil {
 		return errors.Wrapf(absErr, "Cannot find absolute path for '%s'", targetDir)
@@ -66,7 +67,7 @@ func PatchBinaries(targetDir string) error {
 	binDir := absDir + "/bin"
 	_ = os.MkdirAll(binDir, 0755)
 
-	files, err := ioutil.ReadDir(binDir)
+	files, err := os.ReadDir(binDir)
 	if err != nil {
 		return errors.Wrapf(err, "Cannot list directory '%s' to patch binaries", targetDir)
 	}
@@ -74,13 +75,14 @@ func PatchBinaries(targetDir string) error {
 	for _, file := range files {
 		logrus.Debugf("Processing '%s' with patchelf", binDir+"/"+file.Name())
 
-		c := exec.Command("/bin/sh", "-c", fmt.Sprintf("patchelf --set-interpreter %s %s", interpreterPath, binDir+"/"+file.Name()))
+		cmd := fmt.Sprintf("patchelf --set-interpreter %s %s", interpreterPath, binDir+"/"+file.Name())
+		c := exec.Command("/bin/sh", "-c", cmd)
 		c.Stdout = os.Stdout
 		c.Stderr = os.Stderr
 		c.Stdin = os.Stdin
 		c.Env = os.Environ()
 		if waitErr := c.Run(); waitErr != nil {
-			return errors.Wrap(waitErr, "patchelf failed to set ld-linux path")
+			return errors.Wrapf(waitErr, "patchelf failed to set ld-linux path: %s", cmd)
 		}
 	}
 

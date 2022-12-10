@@ -8,7 +8,14 @@ ALREADY_COPIED = []
 
 
 def copy_dependencies(bin_name: str, target_dir: str):
-    bin_path = subprocess.check_output(['whereis', bin_name]).decode('utf-8').split(' ')[1].strip()
+    if os.path.isfile(bin_name):
+        bin_path = bin_name
+    else:
+        bin_path = subprocess.check_output(['whereis', bin_name]).decode('utf-8').split(' ')[1].strip()
+        subprocess.check_call(["file", bin_path])
+
+        if os.path.islink(bin_path):
+            bin_path = os.path.realpath(bin_path)
 
     try:
         os.mkdir(target_dir)
