@@ -22,12 +22,8 @@ RUN cd /workspace && make copy_libs_and_executables POSTGRES_VERSION=${POSTGRES_
 # =============================================
 FROM golang:${GO_VERSION} as builder
 
-ADD . /workspace
-RUN go install -a -v github.com/go-bindata/go-bindata/...@latest \
-    && mkdir -p /root/go/bin && ln -s /go/bin/go-bindata /root/go/bin/go-bindata \
-    && apt-get update && apt-get install make -y
-
-COPY --from=postgres /workspace/.build /workspace/.build
+COPY --from=postgres /workspace /workspace
+RUN apt-get update && apt-get install make -y
 
 RUN cd /workspace && \
-    make generate_bin_data build
+    make build

@@ -1,8 +1,14 @@
 package assets
 
 import (
+	"embed"
 	"log"
 	"os"
+)
+
+var (
+	//go:embed .build/data
+	Res embed.FS
 )
 
 func UnpackOrExit() string {

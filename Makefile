@@ -1,20 +1,19 @@
 include test.mk
 include ci.mk
 
+PG_DATA=assets/.build/data
+
 copy_libs_and_executables:
-	mkdir -p .build/data .build/data/bin
-	cp -p /usr/lib/postgresql/${POSTGRES_VERSION}/bin/psql .build/data/psql
-	cp -p /usr/lib/postgresql/${POSTGRES_VERSION}/bin/pg_dumpall .build/data/pg_dumpall
-	cp -p /usr/lib/postgresql/${POSTGRES_VERSION}/bin/pg_dump .build/data/pg_dump
-	cp -p /usr/lib/postgresql/${POSTGRES_VERSION}/bin/pg_restore .build/data/pg_restore
+	mkdir -p ${PG_DATA}
+	cp -p /usr/lib/postgresql/${POSTGRES_VERSION}/bin/psql ${PG_DATA}/psql
+	cp -p /usr/lib/postgresql/${POSTGRES_VERSION}/bin/pg_dumpall ${PG_DATA}/pg_dumpall
+	cp -p /usr/lib/postgresql/${POSTGRES_VERSION}/bin/pg_dump ${PG_DATA}/pg_dump
+	cp -p /usr/lib/postgresql/${POSTGRES_VERSION}/bin/pg_restore ${PG_DATA}/pg_restore
 
-	./hack/get-binary-with-libs.py /usr/lib/postgresql/${POSTGRES_VERSION}/bin/psql ./.build/data
-	./hack/get-binary-with-libs.py /usr/lib/postgresql/${POSTGRES_VERSION}/bin/pg_dump ./.build/data
-	./hack/get-binary-with-libs.py /usr/lib/postgresql/${POSTGRES_VERSION}/bin/pg_dumpall ./.build/data
-	./hack/get-binary-with-libs.py /usr/lib/postgresql/${POSTGRES_VERSION}/bin/pg_restore ./.build/data
-
-generate_bin_data:
-	~/go/bin/go-bindata -o assets/main.go -pkg assets ./.build/data
+	./hack/get-binary-with-libs.py /usr/lib/postgresql/${POSTGRES_VERSION}/bin/psql ./${PG_DATA}
+	./hack/get-binary-with-libs.py /usr/lib/postgresql/${POSTGRES_VERSION}/bin/pg_dump ./${PG_DATA}
+	./hack/get-binary-with-libs.py /usr/lib/postgresql/${POSTGRES_VERSION}/bin/pg_dumpall ./${PG_DATA}
+	./hack/get-binary-with-libs.py /usr/lib/postgresql/${POSTGRES_VERSION}/bin/pg_restore ./${PG_DATA}
 
 clean:
 	rm -rf .build/*
@@ -31,7 +30,4 @@ build:
 	chmod +x ./.build/pgbr
 
 test:
-	mkdir -p .build/data/bin
-	cp -p .build/data/pg_* .build/data/bin/
-	cp -p .build/data/psql .build/data/bin/psql
 	go test -v ./...

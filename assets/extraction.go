@@ -15,19 +15,29 @@ func ExtractAllFromMemory(targetDir string) (bool, error) {
 	var hasAtLeastOneError bool
 
 	if err := os.RemoveAll(targetDir); err != nil {
-		return false, errors.Wrapf(err, "Cannot delete temporary directory at path: '%s'", targetDir)
+		return false, errors.Wrapf(err, "cannot delete temporary directory at path: '%s'", targetDir)
 	}
 
 	if err := os.MkdirAll(targetDir, 0755); err != nil {
-		return false, errors.Wrapf(err, "Cannot create directory '%s'", targetDir)
+		return false, errors.Wrapf(err, "cannot create directory '%s'", targetDir)
 	}
 
-	for _, assetName := range AssetNames() {
+	dir, readErr := Res.ReadDir(".build/data")
+	if readErr != nil {
+		return false, errors.Wrap(readErr, "cannot read directory from the go:embed")
+	}
+
+	for _, asset := range dir {
+		assetName := asset.Name()
+		if asset.IsDir() {
+			continue
+		}
+
 		logrus.Debugf("Extracting '%s' into '%s'", assetName, targetDir)
-		data, err := Asset(assetName)
+		data, err := Res.ReadFile(".build/data/" + assetName)
 
 		if err != nil {
-			logrus.Error(errors.Wrap(err, "Cannot unpack file from single-binary"))
+			logrus.Error(errors.Wrap(err, "cannot unpack file from single-binary"))
 			hasAtLeastOneError = true
 		}
 
@@ -41,7 +51,7 @@ func ExtractAllFromMemory(targetDir string) (bool, error) {
 
 		err = os.WriteFile(targetDir+"/"+subdir+baseName, data, 0755)
 		if err != nil {
-			logrus.Error(errors.Wrap(err, "Cannot unpack file from single-binary"))
+			logrus.Error(errors.Wrap(err, "cannot unpack file from single-binary"))
 			hasAtLeastOneError = true
 		}
 	}

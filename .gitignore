@@ -15,4 +15,5 @@
 # vendor/
 
 /.build
-/assets/main.go
+/assets/.build/data/*.so*
+/assets/.build/data/pg_*
