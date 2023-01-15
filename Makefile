@@ -18,7 +18,7 @@ copy_libs_and_executables:
 clean:
 	rm -rf .build/*
 
-assets_build: ## Builds PostgreSQL assets using docker
+assets_build: ## Builds PostgreSQL assets using docker - assets will be downloaded in docker and then copied to directory on host
 	docker build . -f build.Dockerfile --build-arg POSTGRES_VERSION=${POSTGRES_VERSION} --build-arg GO_VERSION=${GO_VERSION} -t build
 	@docker rm -f builder 2>/dev/null
 	docker create --name builder build
@@ -29,15 +29,10 @@ build:
 	CGO_ENABLED=0 GO111MODULE=on go build -tags nomemcopy -o ./.build/pgbr
 	chmod +x ./.build/pgbr
 
-test_runs:
-	if [[ $$CI == "true" ]]; then \
-  		sudo /bin/bash -c 'echo "pgsqluser:x:$$(id -u):$$(id -g)::/home:/bin/bash" >> /etc/passwd'; \
-  	fi
-
-  	cat /etc/passwd
-	./.build/pgbr pg_dump -- --help
-	./.build/pgbr pg_dumpall -- --help
-	./.build/pgbr psql -- --help
+test_runs: ## Check if commands are not returning bad exit codes
+	./.build/pgbr pg_dump -- --help > /dev/null
+	./.build/pgbr pg_dumpall -- --help > /dev/null
+	./.build/pgbr psql -- --help > /dev/null
 
 test: test_runs
 	go test -v ./...

@@ -16,6 +16,9 @@ WORKDIR /workspace
 # collect binaries and libraries in .build/data directory
 RUN cd /workspace && make copy_libs_and_executables POSTGRES_VERSION=${POSTGRES_VERSION}
 
+# copy nss_wrapper for mocking the /etc/passwd (PostgreSQL's psql requires access to /etc/passwd)
+RUN cp /usr/lib/x86_64-linux-gnu/libnss_wrapper.so /workspace/assets/.build/data/
+
 
 # =============================================
 #  Build application && embed PostgreSQL in it
