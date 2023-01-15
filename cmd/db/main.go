@@ -1,6 +1,7 @@
 package db
 
 import (
+	"bytes"
 	"github.com/spf13/cobra"
 )
 
@@ -14,8 +15,8 @@ func NewDbCommand(libDir string) *cobra.Command {
 		},
 	}
 
-	command.AddCommand(NewBackupCommand(libDir))
-	command.AddCommand(NewRestoreCommand(libDir))
+	command.AddCommand(NewBackupCommand(libDir, false, bytes.Buffer{}))
+	command.AddCommand(NewRestoreCommand(libDir, false, bytes.Buffer{}))
 
 	return command
 }

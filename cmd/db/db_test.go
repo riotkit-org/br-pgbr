@@ -1,30 +1,38 @@
 package db_test
 
 import (
+	"bytes"
 	"context"
 	"github.com/riotkit-org/br-pg-simple-backup/assets"
 	"github.com/riotkit-org/br-pg-simple-backup/cmd/db"
 	"github.com/stretchr/testify/assert"
 	"github.com/testcontainers/testcontainers-go"
 	"github.com/testcontainers/testcontainers-go/wait"
+	"io"
 	"log"
 	"os"
 	"strings"
 	"testing"
 )
 
-func TestBackup(t *testing.T) {
+func setupContainer() (testcontainers.Container, string) {
 	container, err := createContainer()
 	if err != nil {
 		log.Fatal(err)
 	}
-	defer container.Terminate(context.Background())
 
 	endpoint, _ := container.Endpoint(context.Background(), "")
 	port := strings.Split(endpoint, ":")[1]
 
+	return container, port
+}
+
+func TestBackupAndRestoreSingleDatabase(t *testing.T) {
+	container, port := setupContainer()
+	defer container.Terminate(context.Background())
+
 	path := assets.UnpackOrExit()
-	cmd := db.NewBackupCommand(path)
+	cmd := db.NewBackupCommand(path, true, bytes.Buffer{})
 	cmd.SetArgs([]string{
 		"--host=127.0.0.1",
 		"--port=" + port,
@@ -34,6 +42,30 @@ func TestBackup(t *testing.T) {
 
 		// not using --db-name, in effect dumpall will be used
 	})
+	assert.Nil(t, cmd.Execute(), "Expected that the command will not return error")
+}
+
+func TestBackupAndRestoreAllDatabases(t *testing.T) {
+	container, port := setupContainer()
+	defer container.Terminate(context.Background())
+
+	path := assets.UnpackOrExit()
+	output := bytes.Buffer{}
+
+	// Backup first
+	cmd := db.NewBackupCommand(path, true, output)
+	cmd.SetArgs([]string{
+		"--host=127.0.0.1",
+		"--port=" + port,
+		"--user=anarchism",
+		"--password=syndicalism",
+		// not using --db-name, in effect dumpall will be used
+	})
+
+	out := new(strings.Builder)
+	io.Copy(out, &output)
+
+	println(out.String())
 	assert.Nil(t, cmd.Execute(), "Expected that the command will not return error")
 }
 

@@ -1,6 +1,7 @@
 package db
 
 import (
+	"bytes"
 	"context"
 	"fmt"
 	pgx "github.com/jackc/pgx/v4"
@@ -15,8 +16,11 @@ import (
 const TechDatabaseName = "br_empty_conn_db"
 
 // NewRestoreCommand creates the new command
-func NewRestoreCommand(libDir string) *cobra.Command {
-	app := &RestoreCommand{}
+func NewRestoreCommand(libDir string, captureOutput bool, buffer bytes.Buffer) *cobra.Command {
+	app := &RestoreCommand{
+		CaptureOutput: captureOutput,
+		Buffer:        buffer,
+	}
 	var basicOpts base.BasicOptions
 
 	command := &cobra.Command{
@@ -49,6 +53,8 @@ type RestoreCommand struct {
 	Password      string
 	ExtraArgs     []string
 	DatabaseName  string
+	CaptureOutput bool
+	Buffer        bytes.Buffer
 }
 
 // Run Executes the command and outputs a stream to the stdout
@@ -78,15 +84,24 @@ func (bc *RestoreCommand) Run(libDir string) error {
 	envVars := []string{
 		"PGPASSWORD=" + bc.Password,
 	}
-	if restoreErr := wrapper.RunWrappedPGCommand(libDir, "pg_restore", bc.buildRestoreArgs(), envVars); restoreErr != nil {
-		return errors.Wrap(restoreErr, "Cannot restore backup")
+
+	if bc.DatabaseName != "" {
+		// for single database we run pg_restore
+		if restoreErr := wrapper.RunWrappedPGCommand(libDir, "pg_restore", bc.buildPGRestoreArgs(), envVars, bc.CaptureOutput, bc.Buffer); restoreErr != nil {
+			return errors.Wrap(restoreErr, "Cannot restore backup using pg_restore")
+		}
+	} else {
+		// for multiple databases we run psql
+		if restoreErr := wrapper.RunWrappedPGCommand(libDir, "psql", bc.buildPSQLArgs(), envVars, bc.CaptureOutput, bc.Buffer); restoreErr != nil {
+			return errors.Wrap(restoreErr, "Cannot restore backup using psql")
+		}
 	}
 
 	logrus.Info("Database restored.")
 	return nil
 }
 
-func (bc *RestoreCommand) buildRestoreArgs() []string {
+func (bc *RestoreCommand) buildPGRestoreArgs() []string {
 	restoreArgs := []string{
 		"--clean",
 		"--create",
@@ -105,6 +120,20 @@ func (bc *RestoreCommand) buildRestoreArgs() []string {
 	}
 
 	return restoreArgs
+}
+
+func (bc *RestoreCommand) buildPSQLArgs() []string {
+	psqlArgs := []string{
+		"--host", bc.Hostname,
+		"--port", fmt.Sprintf("%v", bc.Port),
+		"--username", bc.Username,
+		"--dbname=" + bc.InitialDbName,
+		"--no-readline",
+	}
+	if len(bc.ExtraArgs) > 0 {
+		psqlArgs = append(psqlArgs, bc.ExtraArgs...)
+	}
+	return psqlArgs
 }
 
 // createTechnicalDatabase Creates an additional database to which we will be connecting, which will be excluded from the backup & restore process

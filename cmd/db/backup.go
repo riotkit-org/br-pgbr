@@ -1,6 +1,7 @@
 package db
 
 import (
+	"bytes"
 	"fmt"
 	"github.com/riotkit-org/br-pg-simple-backup/cmd/base"
 	"github.com/riotkit-org/br-pg-simple-backup/cmd/wrapper"
@@ -8,8 +9,11 @@ import (
 )
 
 // NewBackupCommand creates the new command
-func NewBackupCommand(libDir string) *cobra.Command {
-	app := &BackupCommand{}
+func NewBackupCommand(libDir string, captureOutput bool, buffer bytes.Buffer) *cobra.Command {
+	app := &BackupCommand{
+		CaptureOutput: captureOutput,
+		Buffer:        buffer,
+	}
 	var basicOpts base.BasicOptions
 
 	command := &cobra.Command{
@@ -44,6 +48,8 @@ type BackupCommand struct {
 	InitialDbName    string
 	CompressionLevel int
 	ExtraArgs        []string
+	CaptureOutput    bool
+	Buffer           bytes.Buffer
 }
 
 // Run Executes the command and outputs a stream to the stdout
@@ -53,7 +59,6 @@ func (bc *BackupCommand) Run(libDir string) error {
 		"--host", bc.Hostname,
 		fmt.Sprintf("--port=%v", bc.Port),
 		"--username", bc.Username,
-		"--format=c", // custom format for pg_restore
 		fmt.Sprintf("--compress=%v", bc.CompressionLevel),
 	}
 	envVars := []string{
@@ -65,7 +70,11 @@ func (bc *BackupCommand) Run(libDir string) error {
 	// difference between pg_dump and pg_dumpall
 	if !bc.allDatabases() {
 		// pg_dump
-		dumpArgs = append(dumpArgs, "--create", "--blobs", bc.Database)
+		dumpArgs = append(dumpArgs,
+			"--create",
+			"--blobs", bc.Database,
+			"--format=c", // custom format for pg_restore
+		)
 		binName = "pg_dump"
 	} else {
 		// pg_dumpall
@@ -78,7 +87,7 @@ func (bc *BackupCommand) Run(libDir string) error {
 		dumpArgs = append(dumpArgs, bc.ExtraArgs...)
 	}
 
-	return wrapper.RunWrappedPGCommand(libDir, binName, dumpArgs, envVars)
+	return wrapper.RunWrappedPGCommand(libDir, binName, dumpArgs, envVars, bc.CaptureOutput, bc.Buffer)
 }
 
 func (bc *BackupCommand) allDatabases() bool {
