@@ -34,6 +34,7 @@ test_runs:
   		sudo /bin/bash -c 'echo "pgsqluser:x:$$(id -u):$$(id -g)::/home:/bin/bash" >> /etc/passwd'; \
   	fi
 
+  	cat /etc/passwd
 	./.build/pgbr pg_dump -- --help
 	./.build/pgbr pg_dumpall -- --help
 	./.build/pgbr psql -- --help
