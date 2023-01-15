@@ -31,7 +31,7 @@ build:
 
 test_runs:
 	if [[ $$CI == "true" ]]; then \
-  		sudo /bin/bash -c 'echo "pgsqluser:x:1001:1001::/home:/bin/bash" >> /etc/passwd'; \
+  		sudo /bin/bash -c 'echo "pgsqluser:x:$$(id -u):$$(id -g)::/home:/bin/bash" >> /etc/passwd'; \
   	fi
 
 	./.build/pgbr pg_dump -- --help
