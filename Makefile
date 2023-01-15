@@ -29,5 +29,10 @@ build:
 	CGO_ENABLED=0 GO111MODULE=on go build -tags nomemcopy -o ./.build/pgbr
 	chmod +x ./.build/pgbr
 
-test:
+test_runs:
+	./.build/pgbr pg_dump -- --help
+	./.build/pgbr pg_dumpall -- --help
+	./.build/pgbr psql -- --help
+
+test: test_runs
 	go test -v ./...

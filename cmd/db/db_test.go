@@ -5,6 +5,7 @@ import (
 	"context"
 	"github.com/riotkit-org/br-pg-simple-backup/assets"
 	"github.com/riotkit-org/br-pg-simple-backup/cmd/db"
+	"github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/assert"
 	"github.com/testcontainers/testcontainers-go"
 	"github.com/testcontainers/testcontainers-go/wait"
@@ -65,7 +66,7 @@ func TestBackupAndRestoreAllDatabases(t *testing.T) {
 	out := new(strings.Builder)
 	io.Copy(out, &output)
 
-	println(out.String())
+	logrus.Println(">>>>>>>>>>>>>", out.String())
 	assert.Nil(t, cmd.Execute(), "Expected that the command will not return error")
 }
 
