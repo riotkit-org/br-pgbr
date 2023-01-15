@@ -30,6 +30,10 @@ build:
 	chmod +x ./.build/pgbr
 
 test_runs:
+	if [[ $$CI == "true" ]]; then \
+  		sudo /bin/bash -c 'echo "pgsqluser:x:1001:1001::/home:/bin/bash" >> /etc/passwd'; \
+  	fi
+
 	./.build/pgbr pg_dump -- --help
 	./.build/pgbr pg_dumpall -- --help
 	./.build/pgbr psql -- --help
