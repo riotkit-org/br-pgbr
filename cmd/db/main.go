@@ -1,11 +1,12 @@
 package db
 
 import (
+	"bytes"
 	"github.com/spf13/cobra"
 )
 
 // NewDbCommand creates the new command
-func NewDbCommand(libDir string) *cobra.Command {
+func NewDbCommand() *cobra.Command {
 	command := &cobra.Command{
 		Use:   "db",
 		Short: "Operations on database level using dumps",
@@ -14,8 +15,11 @@ func NewDbCommand(libDir string) *cobra.Command {
 		},
 	}
 
-	command.AddCommand(NewBackupCommand(libDir))
-	command.AddCommand(NewRestoreCommand(libDir))
+	backupCmd, _ := NewBackupCommand(false, &bytes.Buffer{})
+	command.AddCommand(backupCmd)
+
+	restoreCmd, _ := NewRestoreCommand(false, &bytes.Buffer{})
+	command.AddCommand(restoreCmd)
 
 	return command
 }

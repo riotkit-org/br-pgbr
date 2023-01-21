@@ -1,15 +1,19 @@
 package db
 
 import (
+	"bytes"
 	"fmt"
 	"github.com/riotkit-org/br-pg-simple-backup/cmd/base"
-	"github.com/riotkit-org/br-pg-simple-backup/cmd/wrapper"
+	"github.com/riotkit-org/br-pg-simple-backup/cmd/runner"
 	"github.com/spf13/cobra"
 )
 
 // NewBackupCommand creates the new command
-func NewBackupCommand(libDir string) *cobra.Command {
-	app := &BackupCommand{}
+func NewBackupCommand(captureOutput bool, stdinBuffer *bytes.Buffer) (*cobra.Command, *BackupCommand) {
+	app := &BackupCommand{
+		CaptureOutput: captureOutput,
+		StdinBuffer:   stdinBuffer,
+	}
 	var basicOpts base.BasicOptions
 
 	command := &cobra.Command{
@@ -19,7 +23,9 @@ func NewBackupCommand(libDir string) *cobra.Command {
 		RunE: func(command *cobra.Command, args []string) error {
 			app.ExtraArgs = command.Flags().Args()
 			base.PreCommandRun(command, &basicOpts)
-			return app.Run(libDir)
+			out, err := app.Run()
+			app.Output = out
+			return err
 		},
 	}
 
@@ -32,7 +38,7 @@ func NewBackupCommand(libDir string) *cobra.Command {
 	command.Flags().StringVarP(&app.InitialDbName, "connection-database", "D", "postgres", "Any, even empty database name to connect to initially")
 	base.PopulateFlags(command, &basicOpts)
 
-	return command
+	return command, app
 }
 
 type BackupCommand struct {
@@ -44,17 +50,20 @@ type BackupCommand struct {
 	InitialDbName    string
 	CompressionLevel int
 	ExtraArgs        []string
+	CaptureOutput    bool
+
+	// used for testing
+	Output      []byte
+	StdinBuffer *bytes.Buffer
 }
 
 // Run Executes the command and outputs a stream to the stdout
-func (bc *BackupCommand) Run(libDir string) error {
+func (bc *BackupCommand) Run() ([]byte, error) {
 	dumpArgs := []string{
 		"--clean",
 		"--host", bc.Hostname,
 		fmt.Sprintf("--port=%v", bc.Port),
 		"--username", bc.Username,
-		"--format=c", // custom format for pg_restore
-		fmt.Sprintf("--compress=%v", bc.CompressionLevel),
 	}
 	envVars := []string{
 		"PGPASSWORD=" + bc.Password,
@@ -65,11 +74,16 @@ func (bc *BackupCommand) Run(libDir string) error {
 	// difference between pg_dump and pg_dumpall
 	if !bc.allDatabases() {
 		// pg_dump
-		dumpArgs = append(dumpArgs, "--create", "--blobs", bc.Database)
+		dumpArgs = append(dumpArgs,
+			"--create",
+			"--blobs", bc.Database,
+			"--format=c", // custom format for pg_restore
+			fmt.Sprintf("--compress=%v", bc.CompressionLevel),
+		)
 		binName = "pg_dump"
 	} else {
 		// pg_dumpall
-		dumpArgs = append(dumpArgs, "--superuser="+bc.Username, "--dbname="+bc.InitialDbName)
+		dumpArgs = append(dumpArgs, "--superuser="+bc.Username, "--database="+bc.InitialDbName)
 		binName = "pg_dumpall"
 	}
 
@@ -78,7 +92,7 @@ func (bc *BackupCommand) Run(libDir string) error {
 		dumpArgs = append(dumpArgs, bc.ExtraArgs...)
 	}
 
-	return wrapper.RunWrappedPGCommand(libDir, binName, dumpArgs, envVars)
+	return runner.Run(binName, dumpArgs, envVars, bc.CaptureOutput, bc.StdinBuffer)
 }
 
 func (bc *BackupCommand) allDatabases() bool {
