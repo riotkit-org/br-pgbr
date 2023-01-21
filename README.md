@@ -56,3 +56,18 @@ Both `pgbr db backup` and `pgbr db restore` are supporting UNIX-like parameters 
 ```bash
 pgbr db backup --password riotkit --user riotkit -- --role=my-role > dump.gz
 ```
+
+Using tooling from docker image
+-------------------------------
+
+`pgbr` can rely on your host OS or use `docker run` to trigger `psql`, `pg_dump`, `pg_dumpall` or `pg_restore`.
+
+In order to use a docker image that will provide client tools you can set those environment variables:
+
+```bash
+export PGBR_USE_CONTAINER=true
+export POSTGRES_VERSION=15
+
+# optional: image name
+export PGBR_CONTAINER_IMAGE=my-registry/image-name 
+```
