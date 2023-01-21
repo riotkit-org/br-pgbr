@@ -6,7 +6,7 @@ import (
 )
 
 // NewDbCommand creates the new command
-func NewDbCommand(libDir string) *cobra.Command {
+func NewDbCommand() *cobra.Command {
 	command := &cobra.Command{
 		Use:   "db",
 		Short: "Operations on database level using dumps",
@@ -15,8 +15,8 @@ func NewDbCommand(libDir string) *cobra.Command {
 		},
 	}
 
-	command.AddCommand(NewBackupCommand(libDir, false, bytes.Buffer{}))
-	command.AddCommand(NewRestoreCommand(libDir, false, bytes.Buffer{}))
+	command.AddCommand(NewBackupCommand(false, bytes.Buffer{}))
+	command.AddCommand(NewRestoreCommand(false, bytes.Buffer{}))
 
 	return command
 }

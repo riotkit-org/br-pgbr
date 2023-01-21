@@ -39,7 +39,7 @@ jobs:
                   password: ${{ secrets.GITHUB_TOKEN }}
 
             - name: Build
-              run: "make dockerfile assets_build build GO_VERSION=${{ env.GO_VERSION }} POSTGRES_VERSION=${{ matrix.POSTGRES_VERSION }}"
+              run: "make build GO_VERSION=${{ env.GO_VERSION }} POSTGRES_VERSION=${{ matrix.POSTGRES_VERSION }}"
 
             - name: Build docker image and push release image
               run: "make ci_rename_release_binary ci_release_snapshot ci_release POSTGRES_VERSION=${{ matrix.POSTGRES_VERSION }}"

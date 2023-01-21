@@ -4,12 +4,12 @@ import (
 	"bytes"
 	"fmt"
 	"github.com/riotkit-org/br-pg-simple-backup/cmd/base"
-	"github.com/riotkit-org/br-pg-simple-backup/cmd/wrapper"
+	"github.com/riotkit-org/br-pg-simple-backup/cmd/runner"
 	"github.com/spf13/cobra"
 )
 
 // NewBackupCommand creates the new command
-func NewBackupCommand(libDir string, captureOutput bool, buffer bytes.Buffer) *cobra.Command {
+func NewBackupCommand(captureOutput bool, buffer bytes.Buffer) *cobra.Command {
 	app := &BackupCommand{
 		CaptureOutput: captureOutput,
 		Buffer:        buffer,
@@ -23,7 +23,7 @@ func NewBackupCommand(libDir string, captureOutput bool, buffer bytes.Buffer) *c
 		RunE: func(command *cobra.Command, args []string) error {
 			app.ExtraArgs = command.Flags().Args()
 			base.PreCommandRun(command, &basicOpts)
-			return app.Run(libDir)
+			return app.Run()
 		},
 	}
 
@@ -53,7 +53,7 @@ type BackupCommand struct {
 }
 
 // Run Executes the command and outputs a stream to the stdout
-func (bc *BackupCommand) Run(libDir string) error {
+func (bc *BackupCommand) Run() error {
 	dumpArgs := []string{
 		"--clean",
 		"--host", bc.Hostname,
@@ -87,7 +87,7 @@ func (bc *BackupCommand) Run(libDir string) error {
 		dumpArgs = append(dumpArgs, bc.ExtraArgs...)
 	}
 
-	return wrapper.RunWrappedPGCommand(libDir, binName, dumpArgs, envVars, bc.CaptureOutput, bc.Buffer)
+	return runner.Run(binName, dumpArgs, envVars, bc.CaptureOutput, bc.Buffer)
 }
 
 func (bc *BackupCommand) allDatabases() bool {

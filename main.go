@@ -1,14 +1,12 @@
 package main
 
 import (
-	"github.com/riotkit-org/br-pg-simple-backup/assets"
 	"github.com/riotkit-org/br-pg-simple-backup/cmd"
 	"os"
 )
 
 func main() {
-	tempDir := assets.UnpackOrExit()
-	command := cmd.Main(tempDir)
+	command := cmd.Main()
 	args := os.Args
 
 	if args != nil {

@@ -7,7 +7,7 @@ import (
 	pgx "github.com/jackc/pgx/v4"
 	"github.com/pkg/errors"
 	"github.com/riotkit-org/br-pg-simple-backup/cmd/base"
-	"github.com/riotkit-org/br-pg-simple-backup/cmd/wrapper"
+	"github.com/riotkit-org/br-pg-simple-backup/cmd/runner"
 	"github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 	"strings"
@@ -16,7 +16,7 @@ import (
 const TechDatabaseName = "br_empty_conn_db"
 
 // NewRestoreCommand creates the new command
-func NewRestoreCommand(libDir string, captureOutput bool, buffer bytes.Buffer) *cobra.Command {
+func NewRestoreCommand(captureOutput bool, buffer bytes.Buffer) *cobra.Command {
 	app := &RestoreCommand{
 		CaptureOutput: captureOutput,
 		Buffer:        buffer,
@@ -30,7 +30,7 @@ func NewRestoreCommand(libDir string, captureOutput bool, buffer bytes.Buffer) *
 		RunE: func(command *cobra.Command, args []string) error {
 			app.ExtraArgs = command.Flags().Args()
 			base.PreCommandRun(command, &basicOpts)
-			return app.Run(libDir)
+			return app.Run()
 		},
 	}
 
@@ -58,7 +58,7 @@ type RestoreCommand struct {
 }
 
 // Run Executes the command and outputs a stream to the stdout
-func (bc *RestoreCommand) Run(libDir string) error {
+func (bc *RestoreCommand) Run() error {
 	// 0) Prepare a database we will be connecting to, instead of connecting to target database
 	if err := bc.createTechnicalDatabase(); err != nil {
 		return err
@@ -87,12 +87,12 @@ func (bc *RestoreCommand) Run(libDir string) error {
 
 	if bc.DatabaseName != "" {
 		// for single database we run pg_restore
-		if restoreErr := wrapper.RunWrappedPGCommand(libDir, "pg_restore", bc.buildPGRestoreArgs(), envVars, bc.CaptureOutput, bc.Buffer); restoreErr != nil {
+		if restoreErr := runner.Run("pg_restore", bc.buildPGRestoreArgs(), envVars, bc.CaptureOutput, bc.Buffer); restoreErr != nil {
 			return errors.Wrap(restoreErr, "Cannot restore backup using pg_restore")
 		}
 	} else {
 		// for multiple databases we run psql
-		if restoreErr := wrapper.RunWrappedPGCommand(libDir, "psql", bc.buildPSQLArgs(), envVars, bc.CaptureOutput, bc.Buffer); restoreErr != nil {
+		if restoreErr := runner.Run("psql", bc.buildPSQLArgs(), envVars, bc.CaptureOutput, bc.Buffer); restoreErr != nil {
 			return errors.Wrap(restoreErr, "Cannot restore backup using psql")
 		}
 	}
