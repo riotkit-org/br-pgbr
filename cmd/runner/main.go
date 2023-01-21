@@ -10,12 +10,33 @@ import (
 
 func Run(binName string, execArgs []string, envVars []string, captureOutput bool, inputStdin *bytes.Buffer) ([]byte, error) {
 	logrus.Debugf("Running '%s' %v", binName, execArgs)
+	var c *exec.Cmd
 
-	c := exec.Command(binName, execArgs...)
+	if os.Getenv("PGBR_USE_CONTAINER") != "" && os.Getenv("POSTGRES_VERSION") != "" {
+		containerImage := "bitnami/postgresql"
+		// allow to override the image
+		if os.Getenv("PGBR_CONTAINER_IMAGE") != "" {
+			containerImage = os.Getenv("PGBR_CONTAINER_IMAGE")
+		}
+		containerImage += ":" + os.Getenv("POSTGRES_VERSION")
 
-	env := os.Environ()
-	env = append(env, envVars...)
-	c.Env = env
+		args := []string{"run"}
+
+		// apply env variables as "-e" docker run commandline switches
+		for _, envVar := range envVars {
+			args = append(args, "-e", envVar)
+		}
+
+		args = append(args, "-i", "--entrypoint", binName, "--rm", containerImage)
+		args = append(args, execArgs...)
+
+		c = exec.Command("docker", args...)
+	} else {
+		c = exec.Command(binName, execArgs...)
+		env := os.Environ()
+		env = append(env, envVars...)
+		c.Env = env
+	}
 
 	// allow to optionally capture output into a buffer
 	if captureOutput {

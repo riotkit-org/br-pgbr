@@ -27,16 +27,17 @@ func setupContainer() (testcontainers.Container, string) {
 }
 
 func TestBackupAndRestoreSingleDatabase(t *testing.T) {
-	container, port := setupContainer()
+	container, _ := setupContainer()
 	defer container.Terminate(context.Background())
+	ip, _ := container.ContainerIP(context.TODO())
 
 	logrus.SetLevel(logrus.DebugLevel)
 
 	// Backup first
 	backupCmd, backupApp := db.NewBackupCommand(true, &bytes.Buffer{})
 	backupCmd.SetArgs([]string{
-		"--host=127.0.0.1",
-		"--port=" + port,
+		"--host=" + ip,
+		"--port=5432",
 		"--user=postgres",
 		"--password=postgres",
 		"--db-name=riotkit",
@@ -52,8 +53,8 @@ func TestBackupAndRestoreSingleDatabase(t *testing.T) {
 	// Then restore
 	restoreCmd, restoreApp := db.NewRestoreCommand(true, restoreStdinBuff)
 	restoreCmd.SetArgs([]string{
-		"--host=127.0.0.1",
-		"--port=" + port,
+		"--host=" + ip,
+		"--port=5432",
 		"--user=postgres",
 		"--password=postgres",
 		"--db-name=riotkit",
@@ -63,16 +64,17 @@ func TestBackupAndRestoreSingleDatabase(t *testing.T) {
 }
 
 func TestBackupAndRestoreAllDatabases(t *testing.T) {
-	container, port := setupContainer()
+	container, _ := setupContainer()
 	defer container.Terminate(context.Background())
+	ip, _ := container.ContainerIP(context.TODO())
 
 	logrus.SetLevel(logrus.DebugLevel)
 
 	// Backup first
 	backupCmd, backupApp := db.NewBackupCommand(true, &bytes.Buffer{})
 	backupCmd.SetArgs([]string{
-		"--host=127.0.0.1",
-		"--port=" + port,
+		"--host=" + ip,
+		"--port=5432",
 		"--user=postgres",
 		"--password=postgres",
 		// not using --db-name, in effect dumpall will be used
@@ -88,8 +90,8 @@ func TestBackupAndRestoreAllDatabases(t *testing.T) {
 	// Then restore
 	restoreCmd, restoreApp := db.NewRestoreCommand(true, restoreStdinBuff)
 	restoreCmd.SetArgs([]string{
-		"--host=127.0.0.1",
-		"--port=" + port,
+		"--host=" + ip,
+		"--port=5432",
 		"--user=postgres",
 		"--password=postgres",
 	})
