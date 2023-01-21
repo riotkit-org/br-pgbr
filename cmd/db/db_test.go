@@ -3,13 +3,11 @@ package db_test
 import (
 	"bytes"
 	"context"
-	"github.com/riotkit-org/br-pg-simple-backup/assets"
 	"github.com/riotkit-org/br-pg-simple-backup/cmd/db"
 	"github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/assert"
 	"github.com/testcontainers/testcontainers-go"
 	"github.com/testcontainers/testcontainers-go/wait"
-	"io"
 	"log"
 	"os"
 	"strings"
@@ -32,42 +30,67 @@ func TestBackupAndRestoreSingleDatabase(t *testing.T) {
 	container, port := setupContainer()
 	defer container.Terminate(context.Background())
 
-	path := assets.UnpackOrExit()
-	cmd := db.NewBackupCommand(path, true, bytes.Buffer{})
-	cmd.SetArgs([]string{
+	logrus.SetLevel(logrus.DebugLevel)
+
+	// Backup first
+	backupCmd, backupApp := db.NewBackupCommand(true, &bytes.Buffer{})
+	backupCmd.SetArgs([]string{
 		"--host=127.0.0.1",
 		"--port=" + port,
-		"--user=anarchism",
-		"--password=syndicalism",
+		"--user=postgres",
+		"--password=postgres",
 		"--db-name=riotkit",
-
-		// not using --db-name, in effect dumpall will be used
 	})
-	assert.Nil(t, cmd.Execute(), "Expected that the command will not return error")
+
+	assert.Nil(t, backupCmd.Execute(), "Expected that the command will not return error")
+	out := backupApp.Output
+
+	restoreStdinBuff := &bytes.Buffer{}
+	restoreStdinBuff.Write(out)
+
+	// Then restore
+	restoreCmd, restoreApp := db.NewRestoreCommand(true, restoreStdinBuff)
+	restoreCmd.SetArgs([]string{
+		"--host=127.0.0.1",
+		"--port=" + port,
+		"--user=postgres",
+		"--password=postgres",
+		"--db-name=riotkit",
+	})
+	assert.Nil(t, backupCmd.Execute(), "Expected that the restore will succeed. Output: "+string(restoreApp.Output))
 }
 
 func TestBackupAndRestoreAllDatabases(t *testing.T) {
 	container, port := setupContainer()
 	defer container.Terminate(context.Background())
 
-	path := assets.UnpackOrExit()
-	output := bytes.Buffer{}
+	logrus.SetLevel(logrus.DebugLevel)
 
 	// Backup first
-	cmd := db.NewBackupCommand(path, true, output)
-	cmd.SetArgs([]string{
+	backupCmd, backupApp := db.NewBackupCommand(true, &bytes.Buffer{})
+	backupCmd.SetArgs([]string{
 		"--host=127.0.0.1",
 		"--port=" + port,
-		"--user=anarchism",
-		"--password=syndicalism",
+		"--user=postgres",
+		"--password=postgres",
 		// not using --db-name, in effect dumpall will be used
 	})
 
-	out := new(strings.Builder)
-	io.Copy(out, &output)
+	assert.Nil(t, backupCmd.Execute(), "Expected that the command will not return error")
+	out := backupApp.Output
 
-	logrus.Println(">>>>>>>>>>>>>", out.String())
-	assert.Nil(t, cmd.Execute(), "Expected that the command will not return error")
+	restoreStdinBuff := &bytes.Buffer{}
+	restoreStdinBuff.Write(out)
+
+	// Then restore
+	restoreCmd, restoreApp := db.NewRestoreCommand(true, restoreStdinBuff)
+	restoreCmd.SetArgs([]string{
+		"--host=127.0.0.1",
+		"--port=" + port,
+		"--user=postgres",
+		"--password=postgres",
+	})
+	assert.Nil(t, backupCmd.Execute(), "Expected that the restore will succeed. Output: "+string(restoreApp.Output))
 }
 
 func createContainer() (testcontainers.Container, error) {
@@ -78,9 +101,10 @@ func createContainer() (testcontainers.Container, error) {
 		WaitingFor:   wait.ForLog("database system is ready to accept connections"),
 		AutoRemove:   true,
 		Env: map[string]string{
-			"POSTGRESQL_DATABASE": "riotkit",
-			"POSTGRESQL_USERNAME": "anarchism",
-			"POSTGRESQL_PASSWORD": "syndicalism",
+			"POSTGRESQL_DATABASE":          "riotkit",
+			"POSTGRESQL_USERNAME":          "anarchism",
+			"POSTGRESQL_PASSWORD":          "syndicalism",
+			"POSTGRESQL_POSTGRES_PASSWORD": "postgres",
 		},
 	}
 	pg, err := testcontainers.GenericContainer(ctx, testcontainers.GenericContainerRequest{

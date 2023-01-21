@@ -15,8 +15,11 @@ func NewDbCommand() *cobra.Command {
 		},
 	}
 
-	command.AddCommand(NewBackupCommand(false, bytes.Buffer{}))
-	command.AddCommand(NewRestoreCommand(false, bytes.Buffer{}))
+	backupCmd, _ := NewBackupCommand(false, &bytes.Buffer{})
+	command.AddCommand(backupCmd)
+
+	restoreCmd, _ := NewRestoreCommand(false, &bytes.Buffer{})
+	command.AddCommand(restoreCmd)
 
 	return command
 }

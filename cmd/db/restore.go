@@ -16,10 +16,10 @@ import (
 const TechDatabaseName = "br_empty_conn_db"
 
 // NewRestoreCommand creates the new command
-func NewRestoreCommand(captureOutput bool, buffer bytes.Buffer) *cobra.Command {
+func NewRestoreCommand(captureOutput bool, stdinBuffer *bytes.Buffer) (*cobra.Command, *RestoreCommand) {
 	app := &RestoreCommand{
 		CaptureOutput: captureOutput,
-		Buffer:        buffer,
+		StdinBuffer:   stdinBuffer,
 	}
 	var basicOpts base.BasicOptions
 
@@ -42,7 +42,7 @@ func NewRestoreCommand(captureOutput bool, buffer bytes.Buffer) *cobra.Command {
 	command.Flags().StringVarP(&app.InitialDbName, "connection-database", "D", "postgres", "Any, even empty database name to connect to initially")
 	base.PopulateFlags(command, &basicOpts)
 
-	return command
+	return command, app
 }
 
 type RestoreCommand struct {
@@ -54,7 +54,11 @@ type RestoreCommand struct {
 	ExtraArgs     []string
 	DatabaseName  string
 	CaptureOutput bool
-	Buffer        bytes.Buffer
+	Buffer        *bytes.Buffer
+
+	// for testing purposes
+	Output      []byte
+	StdinBuffer *bytes.Buffer
 }
 
 // Run Executes the command and outputs a stream to the stdout
@@ -87,12 +91,14 @@ func (bc *RestoreCommand) Run() error {
 
 	if bc.DatabaseName != "" {
 		// for single database we run pg_restore
-		if restoreErr := runner.Run("pg_restore", bc.buildPGRestoreArgs(), envVars, bc.CaptureOutput, bc.Buffer); restoreErr != nil {
+		_, restoreErr := runner.Run("pg_restore", bc.buildPGRestoreArgs(), envVars, bc.CaptureOutput, bc.StdinBuffer)
+		if restoreErr != nil {
 			return errors.Wrap(restoreErr, "Cannot restore backup using pg_restore")
 		}
 	} else {
 		// for multiple databases we run psql
-		if restoreErr := runner.Run("psql", bc.buildPSQLArgs(), envVars, bc.CaptureOutput, bc.Buffer); restoreErr != nil {
+		_, restoreErr := runner.Run("psql", bc.buildPSQLArgs(), envVars, bc.CaptureOutput, bc.StdinBuffer)
+		if restoreErr != nil {
 			return errors.Wrap(restoreErr, "Cannot restore backup using psql")
 		}
 	}

@@ -8,25 +8,31 @@ import (
 	"os/exec"
 )
 
-func Run(binName string, execArgs []string, envVars []string, captureOutput bool, buffer bytes.Buffer) error {
+func Run(binName string, execArgs []string, envVars []string, captureOutput bool, inputStdin *bytes.Buffer) ([]byte, error) {
 	logrus.Debugf("Running '%s' %v", binName, execArgs)
 
 	c := exec.Command(binName, execArgs...)
 
 	env := os.Environ()
 	env = append(env, envVars...)
+	c.Env = env
+
+	// allow to optionally capture output into a buffer
+	if captureOutput {
+		c.Stdin = inputStdin
+		out, waitErr := c.Output()
+		if waitErr != nil {
+			return []byte{}, errors.Wrapf(waitErr, "error invoking '%s'", binName)
+		}
+		return out, nil
+	}
 
 	c.Stdout = os.Stdout
 	c.Stderr = os.Stderr
-	// optionally capture output into a buffer
-	if captureOutput {
-		c.Stdout = &buffer
-		c.Stderr = &buffer
-	}
 	c.Stdin = os.Stdin
-	c.Env = env
+
 	if waitErr := c.Run(); waitErr != nil {
-		return errors.Wrapf(waitErr, "error invoking '%s'", binName)
+		return []byte{}, errors.Wrapf(waitErr, "error invoking '%s'", binName)
 	}
-	return nil
+	return []byte{}, nil
 }

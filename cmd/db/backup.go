@@ -9,10 +9,10 @@ import (
 )
 
 // NewBackupCommand creates the new command
-func NewBackupCommand(captureOutput bool, buffer bytes.Buffer) *cobra.Command {
+func NewBackupCommand(captureOutput bool, stdinBuffer *bytes.Buffer) (*cobra.Command, *BackupCommand) {
 	app := &BackupCommand{
 		CaptureOutput: captureOutput,
-		Buffer:        buffer,
+		StdinBuffer:   stdinBuffer,
 	}
 	var basicOpts base.BasicOptions
 
@@ -23,7 +23,9 @@ func NewBackupCommand(captureOutput bool, buffer bytes.Buffer) *cobra.Command {
 		RunE: func(command *cobra.Command, args []string) error {
 			app.ExtraArgs = command.Flags().Args()
 			base.PreCommandRun(command, &basicOpts)
-			return app.Run()
+			out, err := app.Run()
+			app.Output = out
+			return err
 		},
 	}
 
@@ -36,7 +38,7 @@ func NewBackupCommand(captureOutput bool, buffer bytes.Buffer) *cobra.Command {
 	command.Flags().StringVarP(&app.InitialDbName, "connection-database", "D", "postgres", "Any, even empty database name to connect to initially")
 	base.PopulateFlags(command, &basicOpts)
 
-	return command
+	return command, app
 }
 
 type BackupCommand struct {
@@ -49,17 +51,19 @@ type BackupCommand struct {
 	CompressionLevel int
 	ExtraArgs        []string
 	CaptureOutput    bool
-	Buffer           bytes.Buffer
+
+	// used for testing
+	Output      []byte
+	StdinBuffer *bytes.Buffer
 }
 
 // Run Executes the command and outputs a stream to the stdout
-func (bc *BackupCommand) Run() error {
+func (bc *BackupCommand) Run() ([]byte, error) {
 	dumpArgs := []string{
 		"--clean",
 		"--host", bc.Hostname,
 		fmt.Sprintf("--port=%v", bc.Port),
 		"--username", bc.Username,
-		fmt.Sprintf("--compress=%v", bc.CompressionLevel),
 	}
 	envVars := []string{
 		"PGPASSWORD=" + bc.Password,
@@ -74,11 +78,12 @@ func (bc *BackupCommand) Run() error {
 			"--create",
 			"--blobs", bc.Database,
 			"--format=c", // custom format for pg_restore
+			fmt.Sprintf("--compress=%v", bc.CompressionLevel),
 		)
 		binName = "pg_dump"
 	} else {
 		// pg_dumpall
-		dumpArgs = append(dumpArgs, "--superuser="+bc.Username, "--dbname="+bc.InitialDbName)
+		dumpArgs = append(dumpArgs, "--superuser="+bc.Username, "--database="+bc.InitialDbName)
 		binName = "pg_dumpall"
 	}
 
@@ -87,7 +92,7 @@ func (bc *BackupCommand) Run() error {
 		dumpArgs = append(dumpArgs, bc.ExtraArgs...)
 	}
 
-	return runner.Run(binName, dumpArgs, envVars, bc.CaptureOutput, bc.Buffer)
+	return runner.Run(binName, dumpArgs, envVars, bc.CaptureOutput, bc.StdinBuffer)
 }
 
 func (bc *BackupCommand) allDatabases() bool {
