@@ -20,9 +20,9 @@ func Run(binName string, execArgs []string, envVars []string, captureOutput bool
 	// allow to optionally capture output into a buffer
 	if captureOutput {
 		c.Stdin = inputStdin
-		out, waitErr := c.Output()
+		out, waitErr := c.CombinedOutput()
 		if waitErr != nil {
-			return []byte{}, errors.Wrapf(waitErr, "error invoking '%s'", binName)
+			return out, errors.Wrapf(waitErr, "error invoking '%s'", binName)
 		}
 		return out, nil
 	}

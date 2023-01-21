@@ -42,7 +42,8 @@ func TestBackupAndRestoreSingleDatabase(t *testing.T) {
 		"--db-name=riotkit",
 	})
 
-	assert.Nil(t, backupCmd.Execute(), "Expected that the command will not return error")
+	bErr := backupCmd.Execute()
+	assert.Nil(t, bErr, "Expected that the command will not return error: "+string(backupApp.Output))
 	out := backupApp.Output
 
 	restoreStdinBuff := &bytes.Buffer{}
@@ -57,7 +58,8 @@ func TestBackupAndRestoreSingleDatabase(t *testing.T) {
 		"--password=postgres",
 		"--db-name=riotkit",
 	})
-	assert.Nil(t, backupCmd.Execute(), "Expected that the restore will succeed. Output: "+string(restoreApp.Output))
+	err := backupCmd.Execute()
+	assert.Nil(t, err, "Expected that the restore will succeed. Output: "+string(restoreApp.Output))
 }
 
 func TestBackupAndRestoreAllDatabases(t *testing.T) {
@@ -76,7 +78,8 @@ func TestBackupAndRestoreAllDatabases(t *testing.T) {
 		// not using --db-name, in effect dumpall will be used
 	})
 
-	assert.Nil(t, backupCmd.Execute(), "Expected that the command will not return error")
+	bErr := backupCmd.Execute()
+	assert.Nil(t, bErr, "Expected that the command will not return error: "+string(backupApp.Output))
 	out := backupApp.Output
 
 	restoreStdinBuff := &bytes.Buffer{}
@@ -90,7 +93,8 @@ func TestBackupAndRestoreAllDatabases(t *testing.T) {
 		"--user=postgres",
 		"--password=postgres",
 	})
-	assert.Nil(t, backupCmd.Execute(), "Expected that the restore will succeed. Output: "+string(restoreApp.Output))
+	err := backupCmd.Execute()
+	assert.Nil(t, err, "Expected that the restore will succeed. Output: "+string(restoreApp.Output))
 }
 
 func createContainer() (testcontainers.Container, error) {
